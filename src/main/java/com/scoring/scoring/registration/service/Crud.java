@@ -6,11 +6,11 @@ import java.util.UUID;
 public interface Crud<T> {
 
 
-    void create(T entity);
+    T create(T entity);
 
     List<T> read();
 
-    void update(T entity);
+    T update(T entity);
 
     void deleteEntity(T entity);
 

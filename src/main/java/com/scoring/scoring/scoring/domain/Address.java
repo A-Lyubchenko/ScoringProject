@@ -16,8 +16,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name = "residentialAddress")
-public class ResidentialAddress {
+@Table(name = "address")
+public class Address {
+
 
     @Id
     private UUID id = UUID.randomUUID();
@@ -36,5 +37,4 @@ public class ResidentialAddress {
     private Integer numberOfFlat;
     @Column(name = "live_from")
     private LocalDate liveFrom;
-
 }

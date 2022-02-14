@@ -5,54 +5,24 @@ import com.scoring.scoring.registration.domain.EncodePassword;
 import com.scoring.scoring.registration.domain.User;
 import com.scoring.scoring.registration.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-
-
-@Controller
-@RequestMapping("registration")
+@RestController
+@RequestMapping("/api")
 public class RegistrationController {
-    private final String userClassName = User.class.getSimpleName().toLowerCase();
+
     @Autowired
     private UserService userService;
     @Autowired
     private EncodePassword encodePassword;
 
-    @GetMapping("register")
-    public String registerForm(@ModelAttribute("user") User user) {
-        return "main/registration";
-    }
 
-    @PostMapping
-    public String processRegistration(@Valid User user, BindingResult bindingResult) {
-        if (!userService.isUniqueUserName(user)) {
-            bindingResult.addError(new FieldError(userClassName, User.Fields.username,
-                    "Username already in use, choose other."));
-        }
-        if (!userService.isUniqueEmail(user)) {
-            bindingResult.addError(new FieldError(userClassName, User.Fields.email,
-                    "Email already in use, choose other."));
-        }
-        if (bindingResult.hasErrors())
-            return "main/registration";
-
-
+    @PostMapping("/registration")
+    public User processRegistration(@RequestBody User user) {
         String enPassword = encodePassword.encodePassword(user.getPassword());
         user.setPassword(enPassword);
-        userService.create(user);
-        return "redirect:/login";
-    }
+      return userService.create(user);
 
-    @GetMapping("index")
-    public String mainPage() {
-        return "main/index";
     }
 
 }

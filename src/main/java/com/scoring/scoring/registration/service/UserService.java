@@ -18,8 +18,8 @@ public class UserService implements Crud<User> {
 
 
     @Override
-    public void create(User entity) {
-        userRepositories.save(entity);
+    public User create(User entity) {
+       return userRepositories.save(entity);
     }
 
     @Override
@@ -29,8 +29,8 @@ public class UserService implements Crud<User> {
     }
 
     @Override
-    public void update(User entity) {
-        userRepositories.save(entity);
+    public User update(User entity) {
+       return userRepositories.save(entity);
     }
 
     @Override

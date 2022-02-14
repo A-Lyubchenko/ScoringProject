@@ -1,74 +1,60 @@
 package com.scoring.scoring.scoring.controllers;
 
+import com.scoring.scoring.exception.NoSuchEntityException;
 import com.scoring.scoring.scoring.domain.Person;
 import com.scoring.scoring.scoring.services.PersonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@Controller
-@RequestMapping("persons")
+@RestController
+@RequestMapping("/api")
 public class PersonController {
 
     @Autowired
     private PersonService personService;
 
 
-    @GetMapping()
-    public String read(Model model){
-        model.addAttribute("persons",personService.getAll());
-        return "person/read";
-    }
-
-    @GetMapping("{id}")
-    public String get(@PathVariable("id") UUID id, Model model) {
-        model.addAttribute("person", personService.getById(id));
-        return "person/get";
+    @GetMapping("/persons")
+    public List<Person> read() {
+        return personService.getAll();
 
     }
-    @GetMapping("new")
-    public String getCreatePage(@ModelAttribute("person") Person person){
-        return "person/create";
-    }
 
-    @PostMapping()
-    public String create(@Valid Person person, BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            return "person/create";
+    @GetMapping("/persons/{id}")
+    public Person get(@PathVariable("id") UUID uuid) {
+        Person person = personService.getById(uuid);
+        if (person == null) {
+            throw new NoSuchEntityException("There is no person with id " + uuid + " in DataBase");
         }
 
-        personService.save(person);
-        return "redirect:persons";
-    }
-
-    @GetMapping("{id}/update")
-    public String getUpdatePage(@PathVariable("id") UUID id, Model model) {
-        model.addAttribute("person", personService.getById(id));
-        return "person/update";
-    }
-
-    @PatchMapping()
-    public String update(@Valid Person person, BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors())
-            return "person/update";
-
-        personService.update(person);
-        return "person/get";
+        return personService.getById(uuid);
 
     }
 
-    @DeleteMapping("{id}/delete")
+    @PostMapping("/persons")
+    public Person create(@RequestBody Person person) {
+        return personService.save(person);
+    }
+
+
+    @PutMapping("/persons")
+    public Person update(@RequestBody Person person) {
+        return personService.update(person);
+
+    }
+
+    @DeleteMapping("/persons/{id}")
     public String delete(@PathVariable("id") UUID uuid) {
+        Person person = personService.getById(uuid);
+        if (person == null) {
+            throw new NoSuchEntityException("There is no person with id " + uuid + " in DB");
+        }
         personService.delete(personService.getById(uuid));
-        return "redirect:/persons";
+        return "Person with id  = " + uuid + " was deleted";
     }
 }

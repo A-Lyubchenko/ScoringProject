@@ -18,7 +18,8 @@ public class AuthorityService implements Crud<Authority>{
     private AuthorityRepositories authorityRepositories;
 
     @Override
-    public void create(Authority entity) {
+    public Authority create(Authority entity) {
+        return null;
 
     }
 
@@ -28,7 +29,8 @@ public class AuthorityService implements Crud<Authority>{
     }
 
     @Override
-    public void update(Authority entity) {
+    public Authority update(Authority entity) {
+        return null;
 
     }
 

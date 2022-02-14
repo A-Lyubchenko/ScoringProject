@@ -1,121 +1,65 @@
 package com.scoring.scoring.registration.controllers;
 
-import com.scoring.scoring.registration.domain.Authority;
+import com.scoring.scoring.exception.NoSuchEntityException;
 import com.scoring.scoring.registration.domain.EncodePassword;
 import com.scoring.scoring.registration.domain.User;
 import com.scoring.scoring.registration.service.UserService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
-@Controller
-@RequestMapping("users")
+@RestController
+@RequestMapping("/api")
 public class UserController {
 
-    private final String userClassName = User.class.getSimpleName().toLowerCase();
     @Autowired
     private UserService userService;
     @Autowired
     private EncodePassword encodePassword;
 
-    @GetMapping()
-    public String read(Model model) {
-        model.addAttribute("users", userService.read());
-        return "user/read";
+    @GetMapping("/users")
+    public List<User> read() {
+
+        return userService.read();
     }
 
-    @GetMapping("{id}")
-    public String get(@PathVariable("id") UUID id, Model model) {
-        model.addAttribute("user", userService.getEntityById(id));
-        return "user/get";
-
+    @GetMapping("/users/{id}")
+    public User get(@PathVariable("id") UUID uuid) {
+        User user = userService.getEntityById(uuid);
+        if (user == null) {
+            throw new NoSuchEntityException("There is no user with id " + uuid + " in DataBase");
+        }
+        return userService.getEntityById(uuid);
     }
 
-    @GetMapping("new")
-    public String getCreatePage(@ModelAttribute("user") User user, Model model) {
-        model.addAttribute("authoritiesGetCreatePage", Authority.Roles.values());
-        return "user/create";
-    }
 
-    @PostMapping()
-    public String create(@Valid User user, BindingResult bindingResult, Model model,
-                         @ModelAttribute("userRole") Authority.Roles name) {
-        if (!userService.isUniqueUserName(user)) {
-            bindingResult.addError(new FieldError(userClassName, User.Fields.username,
-                    "Username already in use, choose other."));
-            model.addAttribute("authoritiesGetCreatePage", Authority.Roles.values());
-            return "user/create";
-        }
-        if (!userService.isUniqueEmail(user)) {
-            bindingResult.addError(new FieldError(userClassName, User.Fields.email,
-                    "Email already in use, choose other."));
-            model.addAttribute("authoritiesGetCreatePage", Authority.Roles.values());
-            return "user/create";
-        }
-
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("authoritiesGetCreatePage", Authority.Roles.values());
-            return "user/create";
-        }
-
-        user.setAuthorities(List.of(new Authority(name)));
+    @PostMapping("/users")
+    public User create(@RequestBody User user) {
         user.setPassword(encodePassword.encodePassword(user.getPassword()));
-        userService.create(user);
-        return "redirect:/users";
+        return userService.create(user);
 
     }
 
-    @GetMapping("{id}/update")
-    public String getUpdatePage(@PathVariable("id") UUID id, Model model) {
-        model.addAttribute("user", userService.getEntityById(id));
-        model.addAttribute("authoritiesPages", Authority.Roles.values());
-        return "user/update";
-    }
+    @PutMapping("/users")
+    public User update(@RequestBody User user) {
+        return userService.update(user);
 
-    @PatchMapping("{id}")
-    public String update(@PathVariable("id") UUID uuid, @Valid User user, BindingResult bindingResult,
-                          Model model) {
-
-        if (!userService.isUniqueUserName(user)) {
-            bindingResult.addError(new FieldError(userClassName, User.Fields.username,
-                    "Username already in use, choose other."));
-            model.addAttribute("authoritiesPages", Authority.Roles.values());
-
-            return "user/update";
-        }
-        if (!userService.isUniqueEmail(user)) {
-            bindingResult.addError(new FieldError(userClassName, User.Fields.email,
-                    "Email already in use, choose other."));
-
-            model.addAttribute("authoritiesPages", Authority.Roles.values());
-            return "user/update";
-        }
-
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("authoritiesPages", Authority.Roles.values());
-            return "user/update";
-        }
-
-      //  user.setAuthorities(List.of(new Authority(name)));
-        userService.update(user);
-        return "user/get";
 
     }
 
-    @DeleteMapping("{id}/delete")
-    public String delete(@PathVariable("id") UUID id) {
-        User user = userService.getEntityById(id);
-        userService.deleteEntity(user);
-        return "redirect:/users";
+    @DeleteMapping("/users/{id}")
+    public String delete(@PathVariable("id") UUID uuid) {
+        User user = userService.getEntityById(uuid);
+
+        if (user == null) {
+            throw new NoSuchEntityException("There is no user with id " + uuid + " in DataBase");
+        }
+
+        userService.deleteEntity(userService.getEntityById(uuid));
+        return "Person with id  = " + uuid + " was deleted";
+
     }
 
 }

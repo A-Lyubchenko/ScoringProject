@@ -1,72 +1,61 @@
 package com.scoring.scoring.scoring.controllers;
 
+import com.scoring.scoring.exception.NoSuchEntityException;
 import com.scoring.scoring.scoring.domain.AdditionalContact;
 import com.scoring.scoring.scoring.services.AdditionalContactService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
-@Controller
-@RequestMapping("contacts")
+@RestController
+@RequestMapping("/api")
 public class AdditionalContactController {
 
     @Autowired
     private AdditionalContactService additionalContactService;
 
 
-    @GetMapping()
-    public String read(Model model){
-        model.addAttribute("contacts",additionalContactService.getAll());
-        return "additionalContact/read";
-    }
-
-    @GetMapping("{id}")
-    public String get(@PathVariable("id") UUID id, Model model) {
-        model.addAttribute("contact", additionalContactService.getById(id));
-        return "additionalContact/get";
+    @GetMapping("/contacts")
+    public List<AdditionalContact> read() {
+        return additionalContactService.getAll();
 
     }
-    @GetMapping("new")
-    public String getCreatePage(@ModelAttribute("contact") AdditionalContact contact){
-        return "additionalContact/create";
-    }
 
-    @PostMapping()
-    public String create(@Valid @ModelAttribute("contact")  AdditionalContact contact, BindingResult bindingResult) {
+    @GetMapping("/contacts/{id}")
+    public AdditionalContact get(@PathVariable("id") UUID uuid) {
+        AdditionalContact additionalContact = additionalContactService.getById(uuid);
 
-        if (bindingResult.hasErrors()) {
-            return "additionalContact/create";
+        if (additionalContact == null) {
+            throw new NoSuchEntityException("There is no additionalContact with id " + uuid + " in DataBase");
         }
 
-        additionalContactService.save(contact);
-        return "redirect:contacts";
+        return additionalContactService.getById(uuid);
+
     }
 
-    @GetMapping("{id}/update")
-    public String getUpdatePage(@PathVariable("id") UUID uuid, Model model){
-        model.addAttribute("contact",additionalContactService.getById(uuid));
-        return "additionalContact/update";
+    @PostMapping("/contacts")
+    public AdditionalContact create(@RequestBody AdditionalContact contact) {
+        return additionalContactService.save(contact);
     }
+
 
     @PatchMapping()
-    public String update(@Valid @ModelAttribute("contact") AdditionalContact contact, BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors())
-            return "additionalContact/create";
-
-
-        additionalContactService.save(contact);
-        return "redirect:contacts";
+    public AdditionalContact update(@RequestBody AdditionalContact contact) {
+        return additionalContactService.save(contact);
     }
 
-    @DeleteMapping("{id}/delete")
+    @DeleteMapping("/contacts/{id}")
     public String delete(@PathVariable("id") UUID uuid) {
+        AdditionalContact additionalContact = additionalContactService.getById(uuid);
+
+        if (additionalContact == null) {
+            throw new NoSuchEntityException("There is no additionalContact with id " + uuid + " in DataBase");
+        }
+
         additionalContactService.delete(additionalContactService.getById(uuid));
-        return "redirect:/contacts";
+
+        return "Person with id  = " + uuid + " was deleted";
     }
 }

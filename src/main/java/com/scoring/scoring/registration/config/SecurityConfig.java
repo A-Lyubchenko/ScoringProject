@@ -1,7 +1,6 @@
 package com.scoring.scoring.registration.config;
 
 import com.scoring.scoring.registration.service.UserRepositoriesUserDetailService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -9,7 +8,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,10 +23,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public UserDetailsService userDetailsService() {
         return new UserRepositoriesUserDetailService();
-    };
+    }
 
-//    @Autowired
-//    private UserDetailsService userDetailsService;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -40,12 +36,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/").hasAnyAuthority("admin", "user")
                 .antMatchers("/users/**").hasAuthority("admin")
-                .antMatchers("/products/new").hasAuthority("admin")
-                .antMatchers("/products/**/delete").hasAuthority("admin")
-                .antMatchers("/products/**/update").hasAuthority("admin")
-                .antMatchers("/customers/new").hasAuthority("admin")
-                .antMatchers("/customers/**/delete").hasAuthority("admin")
-                .antMatchers("/customers/**/update").hasAuthority("admin")
                 .antMatchers("/registration/register").permitAll()
                 .antMatchers("/registration/login").permitAll()
                 .antMatchers("/").permitAll()
